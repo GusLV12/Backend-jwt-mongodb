@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
 
-export const pool = mongoose.connect("mongodb://localhost/companydb", {
+mongoose.connect("mongodb://localhost:27017/companydb", {
   useNewUrlParser: true,
-  useInifiedTopoly: true
+  useUnifiedTopology: true,
+  connectTimeoutMS: 10000,  // Tiempo de espera para la conexión, 10 segundos
 })
-  .then(db => console.log('Db is connected', db))
-  .catch(error => console.log(error))
+  .then(() => console.log('DB is connected'))
+  .catch(error => console.error('Base de datos no conectada...', error));
