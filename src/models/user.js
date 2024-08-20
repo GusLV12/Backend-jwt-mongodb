@@ -28,12 +28,12 @@ const userSchema = new Schema(
   }
 );
 
-userSchema.static.encryptPassword = async (password) => {
+userSchema.statics.encryptPassword = async (password) => {
   const salt = await bCript.genSalt(10);
   return await bCript.hash(password, salt);
 };
 
-userSchema.static.comparePassword = async (password, receivedpassowrd) => {
+userSchema.statics.comparePassword = async (password, receivedpassowrd) => {
   return await bCript.compare(password, receivedpassowrd);
 };
 
