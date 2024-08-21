@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 import config from "../config.js";
+import Role from "../models/role.js";
 
 export const signUp = async (req, res) => {
   try {
@@ -14,9 +15,18 @@ export const signUp = async (req, res) => {
       roles,
     });
 
+    if (roles) {
+      const foundRoles = await Role.find({ name: { $in: roles } });
+      console.log("Roles encontrados:", foundRoles);
+      newUser.roles = foundRoles.map((role) => role._id);
+    } else {
+      const role = await Role.findOne({ name: "user" });
+      newUser.roles = [role._id];
+    }
+
     // Guardar el nuevo usuario en la base de datos
     const savedUser = await newUser.save();
-    // console.log(newUser);
+    console.log(newUser);
 
     const token = jwt.sign({ id: savedUser._id }, config.SECRET, {
       expiresIn: 86400,
@@ -39,6 +49,32 @@ export const signUp = async (req, res) => {
   }
 };
 
-export const signIn = (req, res) => {
-  res.json("Signin");
+export const signIn = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const userFound = await User.findOne({ email }).populate("roles");
+
+    if (!userFound) {
+      return res.status(400).json({ message: "¡Usuario no encontrado.!" });
+    }
+    
+    const matchPassword = await User.comparePassword(
+      password,
+      userFound.password
+    );
+
+    if (!matchPassword) {
+      return res.status(401).json({ message: "Contraseña inválida." });
+    }
+
+    res.json({
+      user: userFound,
+    });
+  } catch (error) {
+    console.log({
+      message: "Ha ocurrido un error en login...",
+      error: error,
+    });
+  }
 };
