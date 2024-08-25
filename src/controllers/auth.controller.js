@@ -68,8 +68,12 @@ export const signIn = async (req, res) => {
       return res.status(401).json({ message: "Contraseña inválida." });
     }
 
+    const token = jwt.sign({id: userFound._id}, config.SECRET, {
+      expiresIn: 86400,
+    })
+
     res.json({
-      user: userFound,
+      user: {userFound, token},
     });
   } catch (error) {
     console.log({
